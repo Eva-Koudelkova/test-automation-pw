@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    /* === Základní nastavení === */
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "dist",
+
+    /* === TypeScript chování === */
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+
+    /* === Pro Playwright === */
+    "types": ["node", "@playwright/test"],
+
+    /* === Pomocné === */
+    "sourceMap": true
+  },
+  "include": [
+    "tests/**/*.ts",
+    "playwright.config.ts"
+  ]
+}
