@@ -29,14 +29,17 @@ export class RegistrationPage extends BasePage {
     }
 
     async registerNewUser(){
+        await this.goto();
         await this.register(generateRandomEmail(), 'Jane123');
     }
 
     async registerNewUserWithExistingEmail(){
+        await this.goto();
         await this.register('Jane.Doe@jd.com', 'Jane123');
     }
 
     async registerNewUserWithWrongPassword(){
+        await this.goto();
         await this.register(generateRandomEmail(), '12345');
     }
 }
