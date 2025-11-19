@@ -10,7 +10,7 @@ export class RegistrationPage extends BasePage {
     readonly l_submit: Locator;
 
     constructor(page: Page) {
-        super(page, '/registrace')
+        super(page, 'registrace')
 
         this.l_name = this.page.locator("input#name");
         this.l_email = this.page.locator("input#email");

@@ -11,7 +11,7 @@ const { BASE_URL, CI } = process.env;
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './src/tests',
+  testDir: './tests',
   /* Spouštět testy paralelně */
   fullyParallel: true,
 
