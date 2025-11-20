@@ -9,7 +9,7 @@ export class LoginPage extends BasePage {
     readonly l_registration: Locator;
 
     constructor(page: Page) {
-        super(page, 'prihlaseni')
+        super(page, 'prihlaseni');
 
         this.l_email = this.page.locator("input#email");
         this.l_password = this.page.locator("input#password");
@@ -18,21 +18,21 @@ export class LoginPage extends BasePage {
         this.l_registration = this.page.getByRole('link', { name: 'Zaregistrujte se' });
     }
 
-    async login(email: string, password: string){
+    async login(email: string, password: string) {
         await this.goto();
         await this.l_email.fill(email);
         await this.l_password.fill(password);
         await this.l_submit.click();
     }
-    
-    async forgottenPassword(email: string){
+
+    async forgottenPassword(email: string) {
         await this.goto();
         await this.l_forgottenPassword.click();
         await this.l_email.fill(email);
         await this.l_submit.click();
     }
 
-    async register(){
+    async register() {
         await this.goto();
         await this.l_registration.click();
     }

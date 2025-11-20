@@ -10,7 +10,7 @@ export class RegistrationPage extends BasePage {
     readonly l_submit: Locator;
 
     constructor(page: Page) {
-        super(page, 'registrace')
+        super(page, 'registrace');
 
         this.l_name = this.page.locator("input#name");
         this.l_email = this.page.locator("input#email");
@@ -19,8 +19,8 @@ export class RegistrationPage extends BasePage {
         this.l_submit = this.page.locator(".btn-primary");
     }
 
-    private async register(email: string, password: string){
-        
+    private async register(email: string, password: string) {
+
         await this.l_name.fill('Jane Doe');
         await this.l_email.fill(email);
         await this.l_password.fill(password);
@@ -28,17 +28,17 @@ export class RegistrationPage extends BasePage {
         await this.l_submit.click();
     }
 
-    async registerNewUser(){
+    async registerNewUser() {
         await this.goto();
         await this.register(generateRandomEmail(), 'Jane123');
     }
 
-    async registerNewUserWithExistingEmail(){
+    async registerNewUserWithExistingEmail() {
         await this.goto();
         await this.register('Jane.Doe@jd.com', 'Jane123');
     }
 
-    async registerNewUserWithWrongPassword(){
+    async registerNewUserWithWrongPassword() {
         await this.goto();
         await this.register(generateRandomEmail(), '12345');
     }

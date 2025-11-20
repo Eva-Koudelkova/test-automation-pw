@@ -38,4 +38,34 @@ test.describe('Homepage', () => {
         await homePage.forDropdownMenuToBeVisible('Návody a formuláře');
         await homePage.forDropdownMenuToBeVisible('Objednávka pro MŠ/ZŠ');
     });
+    test('zobrazi se Návod k použití systému pro rodiče', { tag:['@homepage']}, async ({ page }) => {
+        const homePage = new HomePage(page);
+        await homePage.testingLinkInstructionsForParents();
+
+        await expect(page.getByText('Návod k použití systému pro rodiče')).toBeVisible();
+    });
+    test('zobrazi se Návod k použití systému pro pedagogy', { tag:['@homepage']}, async ({ page }) => {
+        const homePage = new HomePage(page);
+        await homePage.testingLinkInstructionsForTeachers();
+
+        await expect(page.getByText('Návod k použití systému pro pedagogy')).toBeVisible();
+    });
+    test('zobrazi se Závazná objednávka kurzů a ŠvP pro MŠ/ZŠ', { tag:['@homepage']}, async ({ page }) => {
+        const homePage = new HomePage(page);
+        await homePage.testingLinkBindingOrder();
+        
+        await expect(page.getByText('Objednávka akce')).toBeVisible();
+    });
+    test('zobrazi se webová stránka Czechitas', { tag:['@homepage']}, async ({ page }) => {
+        const homePage = new HomePage(page);
+        await homePage.testingLinkCzechitas();
+
+        await expect(page).toHaveURL('https://www.czechitas.cz/');
+    });
+    test('zobrazi se  webová stránka Czechitas pres odkaz v kontaktu', { tag:['@homepage']}, async ({ page }) => {
+        const homePage = new HomePage(page);
+        await homePage.testingLinkwwwCzechitasCz();
+
+        await expect(page).toHaveURL('https://www.czechitas.cz/');
+    });
 });
