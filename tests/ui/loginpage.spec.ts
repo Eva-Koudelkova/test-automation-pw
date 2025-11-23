@@ -3,12 +3,6 @@ import { LoginPage } from '../../src/pages/login.page';
 import { testUser } from '../../src/users'
 
 test.describe('Prihlaseni', () => {
-    test('uzivatel se uspesne prihlasi', { tag:['@smoke', '@prihlaseni']}, async ({ page }) => {
-        const loginPage = new LoginPage(page);
-        await loginPage.login(testUser.username, testUser.password)
-        
-        await expect(page.getByText(`Přihlášen ${testUser.fullName}`)).toBeVisible();
-    });  
     test('uzivatel se pokusi prihlasit spatnym emailem', { tag:['@smoke', '@prihlaseni']}, async ({ page }) => {
         const loginPage = new LoginPage(page);
         await loginPage.login('J.Doe@jd.com', testUser.password)
@@ -20,6 +14,12 @@ test.describe('Prihlaseni', () => {
         await loginPage.login(testUser.username, 'JaneD123')
         
         await expect(page.getByText('Tyto přihlašovací údaje neodpovídají žadnému záznamu.')).toBeVisible();
+    });
+    test('uzivatel se uspesne prihlasi', { tag:['@smoke', '@prihlaseni']}, async ({ page }) => {
+        const loginPage = new LoginPage(page);
+        await loginPage.login(testUser.username, testUser.password)
+        
+        await expect(page.getByText(`Přihlášen ${testUser.fullName}`)).toBeVisible();
     }); 
 });
 test.describe('Zapomenute heslo', () => {

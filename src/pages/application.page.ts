@@ -1,5 +1,6 @@
 import { type Page, type Locator } from '@playwright/test';
 import { BasePage } from '../base.page';
+import { generateRandomName } from '../util';
 
 export class ApplicationPage extends BasePage {
     //lokátory pro vytvoření přihlášky
@@ -13,9 +14,11 @@ export class ApplicationPage extends BasePage {
     readonly l_studentsDateofBirth: Locator;
     readonly l_legalRepresentativesEmail: Locator;
     readonly l_healthRestrictions: Locator;
+    readonly l_healthRestrictionsNote: Locator;
     readonly l_note: Locator;
     readonly l_generalTermsAndConditionsAgreement: Locator;
     readonly l_submitButton: Locator;
+    readonly l_editButton: Locator;
 
     //lokátory pro vybrání přihlášky a akce
     readonly l_applicationRows: Locator;
@@ -37,10 +40,12 @@ export class ApplicationPage extends BasePage {
         this.l_studentsLastName = this.page.locator('#surname');
         this.l_studentsDateofBirth = this.page.locator('#birthday');
         this.l_legalRepresentativesEmail = this.page.locator('#email');
-        this.l_healthRestrictions = this.page.locator('#restrictions_yes');
+        this.l_healthRestrictions = this.page.locator('label[for="restrictions_yes"]');
+        this.l_healthRestrictionsNote = this.page.locator('#restrictions');
         this.l_note = this.page.locator('#note');
         this.l_generalTermsAndConditionsAgreement = this.page.locator('label[for="terms_conditions"]');
         this.l_submitButton = this.page.getByRole('button', { name: 'Vytvořit přihlášku' });
+        this.l_editButton = this.page.getByRole('button', { name: 'Upravit přihlášku' });
 
         this.l_applicationRows = this.page.locator('#DataTables_Table_0 tbody tr');
 
@@ -80,13 +85,15 @@ export class ApplicationPage extends BasePage {
         date: string,
         legalRepresentative: string,
         studentsFirstName: string,
-        studentsLastName: string,
         studentsDateofBirth: string,
         legalRepresentativeEmail: string,
         paymentMethod: string,
         healthRestrictions: boolean = false,
-        note: string
+        note: string,
+        healthRestrictionsNote?: string
     ) {
+        const studentsLastName = generateRandomName();
+
         await this.selectDate(date);
 
         await this.l_legalRepresentative.fill(legalRepresentative);
@@ -94,18 +101,26 @@ export class ApplicationPage extends BasePage {
         await this.l_studentsLastName.fill(studentsLastName);
         await this.l_studentsDateofBirth.fill(studentsDateofBirth);
         await this.l_legalRepresentativesEmail.fill(legalRepresentativeEmail);
-
+        
         await this.selectPayment(paymentMethod);
-
+        
+        // Zapnutí checkboxu a vyplnění textarea, pokud je předán text
         if (healthRestrictions) {
-            await this.l_healthRestrictions.check();
-        } else {
-            await this.l_healthRestrictions.uncheck();
+            const isChecked = await this.l_healthRestrictions.isChecked();
+            if (!isChecked) {
+                await this.l_healthRestrictions.click();
+            }
+
+            if (healthRestrictionsNote) {
+                await this.l_healthRestrictionsNote.fill(healthRestrictionsNote);
+            }
         }
 
         await this.l_note.fill(note);
         await this.l_generalTermsAndConditionsAgreement.check();
         await this.l_submitButton.click();
+
+        return studentsLastName;
     }
 
     async selectApplicationAndAction(name: string, actionText: string) {
@@ -118,13 +133,19 @@ export class ApplicationPage extends BasePage {
         await row.locator(`a:has-text("${actionText}")`).first().click();
     }
 
-    async cancelApplication(reason: string) {
+    async cancelApplication(reason: string, customReason?: string) {
         switch (reason.toLowerCase()) {
             case 'nemoc':
                 await this.l_reasonIllness.click();
                 break;
             case 'jiný':
                 await this.l_reasonOther.click();
+
+                // pokud byl předán text, tak ho vyplníme
+                if (customReason) {
+                    const reasonField = this.page.locator('#logged_out_reason');
+                    await reasonField.fill(customReason);
+                }
                 break;
             default:
                 throw new Error(`Vyberte jednu z těchto možností.`);
@@ -133,4 +154,50 @@ export class ApplicationPage extends BasePage {
         await this.l_cancelSubmitButton.click();
     }
 
+    async editLegalRepresentativeName(legalRepresentative: string){
+        await this.l_legalRepresentative.fill(legalRepresentative);
+        await this.l_editButton.click();
+    }
+
+    async editStudentsDateOfBirth(newStudentsDateOfBirth: string){
+        await this.l_studentsDateofBirth.fill(newStudentsDateOfBirth);
+        await this.l_editButton.click();
+    }
+
+    async editLegalRepresentativeEmail(newLegalRepresentativeEmail: string){
+        await this.l_legalRepresentativesEmail.fill(newLegalRepresentativeEmail);
+        await this.l_editButton.click();
+    }
+
+    async editPaymentMethod(paymentMethod: string){
+        await this.selectPayment(paymentMethod)
+        await this.l_editButton.click();
+    }
+
+    getPaymentLocator(method: string) {
+        return this.page.locator(`input[id="payment_${method}"]`);
+    }
+
+    async editHealthRestrictions(healthRestrictions: boolean, specificIssue?: string) {
+        const isChecked = await this.l_healthRestrictions.isChecked();
+        // pokud chceme zapnout a není zapnuto
+        if (healthRestrictions && !isChecked) {
+            await this.l_healthRestrictions.click();
+        }
+        // pokud je checkbox zapnutý a je předán text, vyplníme textarea
+        const isNowChecked = await this.l_healthRestrictions.isChecked();
+        if (isNowChecked && specificIssue) {
+            await this.l_healthRestrictionsNote.fill(specificIssue);
+        }
+        // pokud chceme vypnout a je zapnuto
+        if (!healthRestrictions && isChecked) {
+            await this.l_healthRestrictions.click();
+        }
+        await this.l_editButton.click();
+    }
+
+    async editNote(note: string){
+        await this.l_note.fill(note);
+        await this.l_editButton.click();
+    }
 }

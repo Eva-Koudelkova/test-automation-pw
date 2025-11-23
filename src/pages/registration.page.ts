@@ -19,7 +19,7 @@ export class RegistrationPage extends BasePage {
         this.l_submit = this.page.locator(".btn-primary");
     }
 
-    private async register(email: string, password: string) {
+    async register(email: string, password: string) {
 
         await this.l_name.fill('Jane Doe');
         await this.l_email.fill(email);
