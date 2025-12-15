@@ -1,4 +1,4 @@
-import { type Page, type Locator } from '@playwright/test';
+import { expect, type Page, type Locator } from '@playwright/test';
 import { BasePage } from '../base.page';
 import { generateRandomName } from '../util';
 
@@ -19,6 +19,7 @@ export class ApplicationPage extends BasePage {
     readonly l_generalTermsAndConditionsAgreement: Locator;
     readonly l_submitButton: Locator;
     readonly l_editButton: Locator;
+    readonly l_editInDetail: Locator;
 
     //lokátory pro vybrání přihlášky a akce
     readonly l_applicationRows: Locator;
@@ -46,6 +47,7 @@ export class ApplicationPage extends BasePage {
         this.l_generalTermsAndConditionsAgreement = this.page.locator('label[for="terms_conditions"]');
         this.l_submitButton = this.page.getByRole('button', { name: 'Vytvořit přihlášku' });
         this.l_editButton = this.page.getByRole('button', { name: 'Upravit přihlášku' });
+        this.l_editInDetail = this.page.locator('a', { hasText: 'Upravit' });
 
         this.l_applicationRows = this.page.locator('#DataTables_Table_0 tbody tr');
 
@@ -101,9 +103,9 @@ export class ApplicationPage extends BasePage {
         await this.l_studentsLastName.fill(studentsLastName);
         await this.l_studentsDateofBirth.fill(studentsDateofBirth);
         await this.l_legalRepresentativesEmail.fill(legalRepresentativeEmail);
-        
+
         await this.selectPayment(paymentMethod);
-        
+
         // Zapnutí checkboxu a vyplnění textarea, pokud je předán text
         if (healthRestrictions) {
             const isChecked = await this.l_healthRestrictions.isChecked();
@@ -124,13 +126,22 @@ export class ApplicationPage extends BasePage {
     }
 
     async selectApplicationAndAction(name: string, actionText: string) {
-        const row = this.l_applicationRows.filter({
-            has: this.page.locator(`td:first-child:text("${name}")`)
-        });
+        // vyhledávání
+        await this.page.locator('input[type="search"]').fill(name);
 
-        await row.first().waitFor({ state: 'visible' });
+        // počkáme, než se zobrazí správný řádek
+        const row = this.page.locator('tr', { hasText: name });
+        await expect(row).toBeVisible();
 
-        await row.locator(`a:has-text("${actionText}")`).first().click();
+        // vybere akci podle textu tlačítka
+        const actionButton = row.locator('a', { hasText: actionText });
+        await expect(actionButton).toBeVisible();
+
+        await actionButton.click();
+    }
+
+    async editInDetail() {
+        await this.l_editInDetail.click();
     }
 
     async cancelApplication(reason: string, customReason?: string) {
@@ -154,22 +165,22 @@ export class ApplicationPage extends BasePage {
         await this.l_cancelSubmitButton.click();
     }
 
-    async editLegalRepresentativeName(legalRepresentative: string){
+    async editLegalRepresentativeName(legalRepresentative: string) {
         await this.l_legalRepresentative.fill(legalRepresentative);
         await this.l_editButton.click();
     }
 
-    async editStudentsDateOfBirth(newStudentsDateOfBirth: string){
+    async editStudentsDateOfBirth(newStudentsDateOfBirth: string) {
         await this.l_studentsDateofBirth.fill(newStudentsDateOfBirth);
         await this.l_editButton.click();
     }
 
-    async editLegalRepresentativeEmail(newLegalRepresentativeEmail: string){
+    async editLegalRepresentativeEmail(newLegalRepresentativeEmail: string) {
         await this.l_legalRepresentativesEmail.fill(newLegalRepresentativeEmail);
         await this.l_editButton.click();
     }
 
-    async editPaymentMethod(paymentMethod: string){
+    async editPaymentMethod(paymentMethod: string) {
         await this.selectPayment(paymentMethod)
         await this.l_editButton.click();
     }
@@ -196,7 +207,7 @@ export class ApplicationPage extends BasePage {
         await this.l_editButton.click();
     }
 
-    async editNote(note: string){
+    async editNote(note: string) {
         await this.l_note.fill(note);
         await this.l_editButton.click();
     }

@@ -143,7 +143,36 @@ test.describe('Create an application with and without health restrictions', () =
     }); 
 });
 
-test.describe('Edit an application', () => {
+test.describe('Display an application detail', () => {
+    let applicationPage: ApplicationPage;
+
+    test.beforeEach(async ({ page }) => {
+        const loginPage = new LoginPage(page);
+        applicationPage = new ApplicationPage(page);
+        await loginPage.login(testUser.username, testUser.password);
+    });
+
+    test('uživatel si zobrazí detail přihlášky', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+
+        await expect(page.locator('h1', { hasText: studentsLastName })).toBeVisible();
+    });
+});
+
+test.describe('Edit an application via list of applications', () => {
     let applicationPage: ApplicationPage;
 
     test.beforeEach(async ({ page }) => {
@@ -157,7 +186,7 @@ test.describe('Edit an application', () => {
         const studentsLastName = await applicationPage.fillApplication(
             '02.02. - 06.02.2026',
             'Jane Doe',
-            'Joe',
+            'Anna',
             '01.01.2010',
             'email@test.cz',
             'transfer',  // vybraná platební metoda
@@ -298,6 +327,173 @@ test.describe('Edit an application', () => {
         await applicationPage.editNote('Change text in the note')
 
         await applicationPage.selectApplicationAndAction(studentsLastName, 'Upravit');
+        await expect(applicationPage.l_note).toHaveValue('Change text in the note');
+    });
+});
+
+test.describe('Edit an application via application detail', () => {
+    let applicationPage: ApplicationPage;
+
+    test.beforeEach(async ({ page }) => {
+        const loginPage = new LoginPage(page);
+        applicationPage = new ApplicationPage(page);
+        await loginPage.login(testUser.username, testUser.password);
+    });
+
+    test('uživatel upraví v přihlášce jméno zákonného zástupce', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+
+        await applicationPage.editLegalRepresentativeName('Jane Smith')
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.l_legalRepresentative).toHaveValue('Jane Smith');
+    });
+
+    test('uživatel upraví v přihlášce datum narození žáka', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editStudentsDateOfBirth('07.07.2007')
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.l_studentsDateofBirth).toHaveValue('07.07.2007');
+    });
+
+    test('uživatel upraví v přihlášce email zákonného zástupce', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editLegalRepresentativeEmail('testemail@test.cz')
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.l_legalRepresentativesEmail).toHaveValue('testemail@test.cz');
+    });
+
+    test('uživatel upraví v přihlášce způsob úhrady', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editPaymentMethod('cash')
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.getPaymentLocator('cash')).toBeChecked();
+    });
+
+    test('uživatel zaklikne v přihlášce zdravotní omezení', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editHealthRestrictions(true, 'alergie na ořechy')
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.l_healthRestrictions).toBeChecked();
+        await expect(applicationPage.l_healthRestrictionsNote).toContainText('alergie na ořechy');
+    });
+
+    test('uživatel zruší zakliknutí zdravotního omezení', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            true,'alergie na banany',
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editHealthRestrictions(false)
+
+        await applicationPage.editInDetail();
+        await expect(applicationPage.l_healthRestrictions).not.toBeChecked();
+    });
+
+
+    test('uživatel upraví v přihlášce poznámku', { tag:['@smoke', '@applicationpage']}, async ({ page }) => {
+        await applicationPage.createNewApplication()
+        const studentsLastName = await applicationPage.fillApplication(
+            '02.02. - 06.02.2026',
+            'Jane Doe',
+            'Joe',
+            '01.01.2010',
+            'email@test.cz',
+            'transfer',  // vybraná platební metoda
+            false,
+            'Bez omezení'
+        );
+        await page.locator('xpath=//*[@id="navbarSupportedContent"]/div[1]/a[2]').click()
+        
+        await applicationPage.selectApplicationAndAction(studentsLastName, 'Detail');
+        await applicationPage.editInDetail();
+        await applicationPage.editNote('Change text in the note')
+
+        await applicationPage.editInDetail();
         await expect(applicationPage.l_note).toHaveValue('Change text in the note');
     });
 });
